@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FORGE Build Tracker</title>
+<meta name="theme-color" content="#14161A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FORGE">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2314161A'/%3E%3Cg fill='%23F0A830'%3E%3Ccircle cx='18' cy='18' r='4.5'/%3E%3Ccircle cx='32' cy='18' r='4.5'/%3E%3Ccircle cx='46' cy='18' r='4.5'/%3E%3Ccircle cx='18' cy='32' r='4.5'/%3E%3Ccircle cx='32' cy='32' r='4.5'/%3E%3Ccircle cx='46' cy='32' r='4.5'/%3E%3Ccircle cx='18' cy='46' r='4.5'/%3E%3Ccircle cx='32' cy='46' r='4.5'/%3E%3Ccircle cx='46' cy='46' r='4.5'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2314161A'/%3E%3Cg fill='%23F0A830'%3E%3Ccircle cx='18' cy='18' r='4.5'/%3E%3Ccircle cx='32' cy='18' r='4.5'/%3E%3Ccircle cx='46' cy='18' r='4.5'/%3E%3Ccircle cx='18' cy='32' r='4.5'/%3E%3Ccircle cx='32' cy='32' r='4.5'/%3E%3Ccircle cx='46' cy='32' r='4.5'/%3E%3Ccircle cx='18' cy='46' r='4.5'/%3E%3Ccircle cx='32' cy='46' r='4.5'/%3E%3Ccircle cx='46' cy='46' r='4.5'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --ground:#14161A; --panel:#1B1E24; --panelHi:#22262E; --rule:#2E333C;
+  --bone:#E8E4DA; --dim:#7C8492; --dimmer:#535A66;
+  --amber:#F0A830; --cyan:#4FB8C4; --fault:#C4574F; --ok:#6FA86B; --violet:#B07FD0;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--ground);color:var(--bone);font-family:var(--sans);-webkit-text-size-adjust:100%}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 40px}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.panel{background:var(--panel);border:1px solid var(--rule)}
+.row{display:flex}.wrapf{flex-wrap:wrap}.between{justify-content:space-between}
+.center{align-items:center}.baseline{align-items:baseline}.start{align-items:flex-start}
+.g2{gap:8px}.g3{gap:12px}.g4{gap:16px}.f1{flex:1}
+.mb2{margin-bottom:8px}.mb3{margin-bottom:12px}.mb4{margin-bottom:16px}
+.p3{padding:12px}
+button{font-family:var(--mono);cursor:pointer;background:transparent;border:none;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+input,textarea{background:var(--ground);border:1px solid var(--rule);color:var(--bone);font-family:var(--mono);padding:8px}
+textarea{width:100%;resize:vertical;font-size:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:520px){.grid3{grid-template-columns:1fr}}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--rule);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{padding:9px 11px;font-size:11px;letter-spacing:.1em;color:var(--dim);border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:var(--bone);border-bottom-color:var(--amber)}
+.item{display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;padding:5px 0;font-family:var(--mono)}
+.item .bx{font-size:12px;color:var(--dimmer);margin-top:1px;flex-shrink:0}
+.item.on .bx{color:var(--ok)}
+.item .tx{font-size:12px;line-height:1.55;color:var(--bone)}
+.item.on .tx{color:var(--dimmer);text-decoration:line-through}
+.trk{padding:8px 9px;font-size:10px;letter-spacing:.08em;border:1px solid var(--rule);color:var(--dimmer);background:transparent}
+.trk.on{background:var(--panelHi)}
+.gate{border-left:2px solid var(--rule)}
+.sess{display:flex;align-items:baseline;gap:12px;padding:5px 0;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:11px}
+.bar{height:3px;background:var(--ground);margin:8px 0 10px}
+.bar>i{display:block;height:100%;background:var(--amber)}
+.foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:20px;padding-top:12px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:10px;color:var(--dimmer)}
+.foot button{font-size:10px;color:var(--dimmer);text-decoration:underline}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:var(--panelHi);border:1px solid var(--ok);color:var(--ok);font-family:var(--mono);font-size:12px;padding:9px 16px;z-index:50}
+@media (prefers-reduced-motion:no-preference){.toast{animation:fade .25s ease-out}@keyframes fade{from{opacity:0;transform:translate(-50%,6px)}}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+"use strict";
+
+/* ============================ plan data ============================ */
+const WEEKS=[
+{n:0,s:"2026-08-05",e:"2026-08-09",label:"Aug 5–9",focus:"Mobilization",gate:"G0",hrs:10,d:["Measurement inquiries sent (ECE, CAMD, faculty)","Breakout modules + consumables ordered","Datasheets downloaded, VERIFY list built","Repo restructured for two boards","Resume + LinkedIn corrected"]},
+{n:1,s:"2026-08-10",e:"2026-08-16",label:"Aug 10–16",focus:"I²S proof of life",gate:null,hrs:18,d:["pico-extras example makes sound","Own I²S TX + tone table working","Clock chain derived by hand","LRCK measured at 48.000 kHz","Buffer depth floor found","M-CAL-01 loopback complete"]},
+{n:2,s:"2026-08-17",e:"2026-08-23",label:"Aug 17–23",focus:"ADC, clock domains, flash",gate:null,hrs:18,d:["I²S RX capturing samples","MODE_PASSTHRU audible","Clock-domain decision made + documented","Flash verified, throughput measured","Sample streams flash → DAC"]},
+{n:3,s:"2026-08-24",e:"2026-08-30",label:"Aug 24–30",focus:"Pad chain + analog stage",gate:"G1",hrs:18,d:["4-pad chain running at 10 nF","M-SYS-01 σ measured","PEAK_DROP_COUNTS derived from data","Adaptive peak detection implemented","Analog output stage breadboarded","Charge pump artifact measured","v0.1-breadboard tagged"]},
+{n:4,s:"2026-08-31",e:"2026-09-06",label:"Aug 31–Sep 6",focus:"AUDIO schematic: power, DAC, amp",gate:null,hrs:18,d:["4-layer stackup + design rules set","Custom footprints verified vs datasheets","Power section drawn","DAC section drawn","Headphone amp drawn"]},
+{n:5,s:"2026-09-07",e:"2026-09-13",label:"Sep 7–13",focus:"AUDIO schematic: ADC, clock, review",gate:null,hrs:10,d:["ADC section drawn","Clock + JP1 drawn","J-LINK + 14 test points placed","Red-pen review pass 1","ERC clean, BOM cross-referenced"]},
+{n:6,s:"2026-09-14",e:"2026-09-20",label:"Sep 14–20",focus:"AUDIO layout + fab release",gate:"G2",hrs:10,d:["Placement partitioned analog/digital","L2 solid ground pour, no routing","Analog paths routed first","Digital routed, charge pump return local","DRC zero errors","Gerbers verified independently","AUDIO ordered + BOM ordered"]},
+{n:7,s:"2026-09-21",e:"2026-09-27",label:"Sep 21–27",focus:"PAD schematic",gate:null,hrs:10,d:["GPIO allocation verified vs RP2040 datasheet","Project + libraries set up","Power, Pico, mux, ADC path drawn","16 dividers drawn at 10 nF","Flash, buttons, LEDs, J-LINK drawn"]},
+{n:8,s:"2026-09-28",e:"2026-10-04",label:"Sep 28–Oct 4",focus:"PAD layout · CAREER FAIR",gate:null,hrs:10,d:["Red-pen review + ERC clean","Placement done","Flash isolated from ADC_IN","Ground pour + power routed","ADC_IN routed with care","CAREER FAIR attended","AUDIO boards inspected on arrival"]},
+{n:9,s:"2026-10-05",e:"2026-10-11",label:"Oct 5–11",focus:"PAD fab release · AUDIO assembly",gate:"G3",hrs:10,d:["Digital routing complete","Pour re-run, no isolated islands","Silkscreen complete","DRC zero errors","Gerbers verified","PAD ordered + BOM ordered","AUDIO assembly started"]},
+{n:10,s:"2026-10-12",e:"2026-10-18",label:"Oct 12–18",focus:"AUDIO assembly",gate:null,hrs:10,d:["T01 bare board inspection","SMD practice done first","Passives soldered + inspected","ICs soldered, easiest to hardest","T02 rails / T03 charge pump / T04 clock"]},
+{n:11,s:"2026-10-19",e:"2026-10-25",label:"Oct 19–25",focus:"Converter characterization",gate:"G4",hrs:10,d:["T12/T13 first sound","T14 amp / T15 ADC path","M-CAL-01 re-verified","M-DAC-01→12 complete","M-ADC-01→07 complete","M-EXP-01 clock A/B complete","Python plot pipeline built, plots committed"]},
+{n:12,s:"2026-10-26",e:"2026-11-01",label:"Oct 26–Nov 1",focus:"PAD assembly",gate:null,hrs:10,d:["T05 bare board inspection","Passives soldered — verified 10 nF not 100 nF","Mux, flash, LDO soldered","Through-hole + Pico headers","Continuity audit + T11","T06–T10 pass"]},
+{n:13,s:"2026-11-02",e:"2026-11-08",label:"Nov 2–8",focus:"Integration",gate:"G5",hrs:10,d:["T11 re-run, boards mated","Sound from a pad, no computer","T16 record/playback / T17 sequencer","T18 on Windows, macOS, Linux","T19 hot-plug / T20 soak","v0.5-integrated tagged"]},
+{n:14,s:"2026-11-09",e:"2026-11-15",label:"Nov 9–15",focus:"Pad characterization",gate:null,hrs:10,d:["M-SYS-01 on real board","M-SYS-02 pre-calibration, 20 strikes/level","calib.c written, persisted to flash","M-SYS-02 post-calibration","M-SYS-04 crosstalk / M-SYS-09 resolution"]},
+{n:15,s:"2026-11-16",e:"2026-11-22",label:"Nov 16–22",focus:"Coupling, timing, power",gate:null,hrs:10,d:["M-SYS-05 six conditions + FFT each","M-SYS-05 aggressors identified by frequency","M-SYS-06 scan rate / M-SYS-07 jitter","M-SYS-08 polyphony + buffer floor","M-PWR-01→04 complete"]},
+{n:16,s:"2026-11-23",e:"2026-11-29",label:"Nov 23–29",focus:"Latency baseline · Thanksgiving",gate:"G6",hrs:8,d:["Three-channel latency rig built","Config A measured (naive, ~22 ms)","Config B measured (10 nF)","System sections of report written"]},
+{n:17,s:"2026-11-30",e:"2026-12-06",label:"Nov 30–Dec 6",focus:"Optimization · respin decision",gate:null,hrs:10,d:["Config C measured (adaptive peak)","Config D measured (small buffer)","Four-point optimization plot produced","latency_budget.md written","RESPIN DECISION made","Respin ordered by Dec 6 if triggered"]},
+{n:18,s:"2026-12-07",e:"2026-12-13",label:"Dec 7–13",focus:"Finals — firmware polish only",gate:null,hrs:4,d:["Known bugs fixed","STATS counters improved","Design decision backlog cleared"]},
+{n:19,s:"2026-12-14",e:"2026-12-20",label:"Dec 14–20",focus:"Finals — light",gate:"G7",hrs:4,d:["Respin inspected if it arrived","Gate 7 assessment"]},
+{n:20,s:"2026-12-21",e:"2026-12-27",label:"Dec 21–27",focus:"Sampler engine",gate:null,hrs:22,d:["voice.c + audio.c complete","sample.c streaming with CRC validation","8 voices, 10 min, zero underruns","Respin assembled + re-measured"]},
+{n:21,s:"2026-12-28",e:"2027-01-03",label:"Dec 28–Jan 3",focus:"Recording, sequencer, enclosure",gate:null,hrs:22,d:["record.c — ADC capture to flash","Sequencer drives internal voices","ui.c — buttons and LEDs","Enclosure designed and cut"]},
+{n:22,s:"2027-01-04",e:"2027-01-10",label:"Jan 4–10",focus:"Calibration, assembly, demo",gate:"G8",hrs:22,d:["Final velocity tuning by playing","Boards mounted in enclosure","FSR preload checked after enclosing","T20 soak passes enclosed","Demo video recorded","Hero photos taken"]},
+{n:23,s:"2027-01-11",e:"2027-01-17",label:"Jan 11–17",focus:"Reader-facing documents",gate:null,hrs:10,d:["README with hero photo + summary table","measurement_report.md assembled","design_decisions.md polished, all 28","latency_budget.md final","ground_strategy.md written"]},
+{n:24,s:"2027-01-18",e:"2027-01-24",label:"Jan 18–24",focus:"Repository quality",gate:null,hrs:10,d:["Repo hygiene, no artifacts or secrets","Code review pass, every file","Clean-clone build, zero warnings","Altium projects portable, PDFs exported","Unit tests passing"]},
+{n:25,s:"2027-01-25",e:"2027-01-31",label:"Jan 25–31",focus:"Launch + application",gate:"G9",hrs:10,d:["CHANGELOG.md complete","README cold-read under 30 s","Resume + LinkedIn updated","Repository made public","Application package ready","v1.0 tagged"]}
+];
+
+const GATES=[
+{id:"G0",wk:0,date:"2026-08-09",name:"Mobilization",crit:"Measurement path identified and inquiries sent. Parts ordered. Repo restructured. Resume corrected."},
+{id:"G1",wk:3,date:"2026-08-30",name:"Breadboard proof",crit:"RP2040 drives I²S DAC to measured audible output. LRCK verified 48.000 kHz ±100 ppm. ADC captures, passthrough works. M-CAL-01 complete. 4-pad chain sends velocity MIDI. Clock-domain question resolved."},
+{id:"G2",wk:6,date:"2026-09-20",name:"AUDIO released to fab",crit:"Schematic ERC-clean, layout DRC-clean, Gerbers independently verified, fab + BOM ordered. Board VERIFY items resolved. Decisions 11–17, 23–24, 28 written."},
+{id:"G3",wk:9,date:"2026-10-11",name:"PAD released to fab",crit:"Schematic ERC-clean, layout DRC-clean, fab + BOM ordered. GPIO allocation verified vs RP2040 datasheet. Decisions 1–10, 19–22, 25–27 written."},
+{id:"G4",wk:11,date:"2026-10-25",name:"Converters characterized",crit:"AUDIO assembled, T01–T04 and T12–T15 pass. Measured audio from breadboard Pico. M-DAC-01→12, M-ADC-01→07, M-EXP-01 complete. Plots committed with source data."},
+{id:"G5",wk:13,date:"2026-11-08",name:"System integrated",crit:"PAD assembled, T05–T20 pass. Boards mated. Pad strike produces sound with no computer attached. Class compliance verified on three operating systems."},
+{id:"G6",wk:16,date:"2026-11-29",name:"System characterized",crit:"M-SYS-01→09 and M-PWR-01→04 complete. M-SYS-05 complete with FFTs and interpretation. Latency configs A and B measured."},
+{id:"G7",wk:19,date:"2026-12-20",name:"Optimized",crit:"All four latency configs measured. Four-point plot produced. latency_budget.md complete. Respin decision made and executed or deferred with reasoning."},
+{id:"G8",wk:22,date:"2027-01-10",name:"Instrument complete",crit:"8-voice sampler, ADC recording, sequencer driving internal voices, calibration applied, enclosure assembled, T20 soak passing. Demo video and photos done."},
+{id:"G9",wk:25,date:"2027-01-31",name:"Shipped",crit:"Repo public, clean-clone build with zero warnings. All documentation complete. README with hero photo and summary table. Resume updated. Application package ready."}
+];
+
+const VERIFY=["PCM5102A — THD+N typical (record rev + date)","PCM5102A — full-scale output Vrms","PCM5102A — config pins: FMT, XSMT, FLT, DEMP, SCK","PCM5102A — SCK-less mode supported sample rates","PCM5102A — interpolation filter group delay","PCM5102A — recommended external filter values","PCM1808 — supply requirements (VDD / VCC)","PCM1808 — input full-scale and biasing","PCM1808 — mode pins: master/slave, format","PCM1808 — SCKI ratio requirement","OPA1678 — output current, headphone drive capability","LP5907 — output noise in µVrms","TPS60403 — switching frequency","TPS60403 — flying and reservoir cap values","TPS60403 — output ripple spec","W25Q128JV — JEDEC ID bytes","W25Q128JV — maximum SPI clock","CD74HC4067 — on-resistance and switching time","RP2040 — ADC conversion time and offset error","RP2040 — GPIO pin function table (I²S adjacency, SPI1, I²C0)","RP2040 — PLL configuration range for audio clock","XO — jitter spec in ps RMS","Measurement interface — THD+N and noise spec","FSR 402 — resistance range and repeatability","NU academic calendar — fall finals, spring start","NU career fair — exact date and whether Bose attends","JLCPCB — 4-layer stackup and dielectric","Pico — VSYS and 3V3 current limits","TinyUSB — composite MIDI+CDC descriptor requirements"];
+
+const DECISIONS=["Two-board architecture","RP2040 as controller","FSR resistive pad sensing","CD74HC4067 16:1 multiplexing","Voltage divider readout topology","FSR filter corner at 10 nF ★","Isolated divider excitation rail","Adaptive peak velocity detection ★","Logarithmic velocity curve","Generic FSRs with firmware calibration","PCM5102A DAC over integrated codec","PCM1808 ADC","Single-pole anti-alias filter","OPA1678 headphone amp on split rails","TPS60403 charge pump negative rail","LP5907 low-noise analog LDO","Jumper-selectable clock source ★","48 kHz sample rate","External SPI flash for samples","64-frame audio buffer","Dual-core partitioning","PAD 2-layer stackup","AUDIO 4-layer stackup","Unified ground plane, partitioned by placement ★","2×8 interconnect with six grounds","Composite MIDI + CDC device","Socketed Pico module","Output cap fallback footprints"];
+
+const TRACKS=["HW","FW","MEAS","DOCS"];
+const TRACK_C={HW:"var(--amber)",FW:"var(--cyan)",MEAS:"var(--violet)",DOCS:"var(--dim)"};
+const KEY="forge.tracker.v1";
+
+/* ============================ state ============================ */
+let S={sessions:[],weeks:{},verify:[],decisions:[],gates:{}};
+let UI={tab:"week",viewWeek:0,track:"HW"};
+
+function load(){
+  try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r));}
+  catch(e){console.warn("Could not read saved data",e);}
+}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));}
+  catch(e){toast("Not saved — storage unavailable","var(--fault)");}
+}
+
+/* ============================ helpers ============================ */
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);};
+const dnum=s=>new Date(s+"T00:00:00").getTime();
+const daysBetween=(a,b)=>Math.round((dnum(b)-dnum(a))/864e5);
+function weekIdx(d){const t=dnum(d);if(t<dnum(WEEKS[0].s))return -1;for(let i=0;i<WEEKS.length;i++)if(t<=dnum(WEEKS[i].e))return i;return WEEKS.length;}
+const clampWk=i=>Math.max(0,Math.min(i,WEEKS.length-1));
+
+function toast(msg,color){
+  const t=document.createElement("div");t.className="toast";t.textContent=msg;
+  if(color){t.style.borderColor=color;t.style.color=color;}
+  document.body.appendChild(t);setTimeout(()=>t.remove(),1900);
+}
+
+/* ============================ derived ============================ */
+function derived(){
+  const wi=weekIdx(today()), cw=clampWk(wi);
+  const byWeek=new Array(WEEKS.length).fill(0);
+  S.sessions.forEach(s=>{const i=weekIdx(s.date);if(i>=0&&i<WEEKS.length)byWeek[i]+=s.hours;});
+  let t=0;const cumBudget=WEEKS.map(w=>t+=w.hrs);
+  t=0;const cumActual=byWeek.map(h=>t+=h);
+  let budgetToDate=0;
+  if(wi>=0){
+    for(let k=0;k<cw;k++)budgetToDate+=WEEKS[k].hrs;
+    const el=Math.max(0,daysBetween(WEEKS[cw].s,today())+1);
+    const sp=daysBetween(WEEKS[cw].s,WEEKS[cw].e)+1;
+    budgetToDate+=WEEKS[cw].hrs*Math.min(1,el/sp);
+  }
+  if(wi>=WEEKS.length)budgetToDate=cumBudget[cumBudget.length-1];
+  const logged=S.sessions.reduce((a,s)=>a+s.hours,0);
+  const drift=logged-budgetToDate;
+  const status=drift>=-4?"ON PACE":drift>=-12?"SLIPPING":"BEHIND";
+  const statusC=status==="ON PACE"?"var(--ok)":status==="SLIPPING"?"var(--amber)":"var(--fault)";
+  const nextGate=GATES.find(g=>!S.gates[g.id])||null;
+  return{wi,cw,byWeek,cumBudget,cumActual,logged,drift,status,statusC,nextGate};
+}
+
+/* ============================ burndown ============================ */
+function burndown(D){
+  const W=720,H=220,PL=46,PR=14,PT=14,PB=26;
+  const maxY=Math.max(D.cumBudget[D.cumBudget.length-1],...D.cumActual)*1.05||100;
+  const x=i=>PL+(i/(WEEKS.length-1))*(W-PL-PR);
+  const y=v=>PT+(1-v/maxY)*(H-PT-PB);
+  let g="";
+  [0,.25,.5,.75,1].forEach(f=>{
+    g+=`<line x1="${PL}" x2="${W-PR}" y1="${y(maxY*f)}" y2="${y(maxY*f)}" stroke="var(--rule)" stroke-width="1"${f?' stroke-dasharray="1 3"':''}/>`
+     + `<text x="${PL-7}" y="${y(maxY*f)+3}" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--dimmer)">${Math.round(maxY*f)}</text>`;
+  });
+  GATES.forEach(gt=>{
+    const p=!!S.gates[gt.id], od=!p&&dnum(today())>dnum(gt.date);
+    const c=od?"var(--fault)":p?"var(--ok)":"var(--rule)";
+    g+=`<line x1="${x(gt.wk)}" x2="${x(gt.wk)}" y1="${PT}" y2="${H-PB}" stroke="${c}" stroke-width="1" stroke-dasharray="2 3" opacity="${p||od?.85:.5}"/>`
+     + `<text x="${x(gt.wk)}" y="${H-PB+12}" text-anchor="middle" font-family="var(--mono)" font-size="8" fill="${od?"var(--fault)":p?"var(--ok)":"var(--dimmer)"}">${gt.id}</text>`;
+  });
+  const bp=D.cumBudget.map((v,i)=>`${i?"L":"M"}${x(i)},${y(v)}`).join(" ");
+  const up=clampWk(D.wi);
+  const ap=D.cumActual.slice(0,up+1).map((v,i)=>`${i?"L":"M"}${x(i)},${y(v)}`).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block" role="img" aria-label="Cumulative hours: ${Math.round(D.cumActual[up]||0)} logged against ${Math.round(D.cumBudget[up]||0)} budgeted">
+    <rect x="${PL}" y="${PT}" width="${W-PL-PR}" height="${H-PT-PB}" fill="#101216"/>${g}
+    <path d="${bp}" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".85"/>
+    ${D.wi>=0?`<path d="${ap}" fill="none" stroke="var(--amber)" stroke-width="2"/><circle cx="${x(up)}" cy="${y(D.cumActual[up]||0)}" r="3.5" fill="var(--amber)"/>`:""}
+  </svg>`;
+}
+
+/* ============================ render ============================ */
+function render(){
+  const D=derived(), w=WEEKS[D.cw];
+  const gd=D.nextGate?daysBetween(today(),D.nextGate.date):null;
+  const wkH=D.byWeek[D.cw]||0;
+  const vw=WEEKS[UI.viewWeek], wd=S.weeks[UI.viewWeek]||{done:[],q1:"",q2:"",q3:""};
+  const vDone=(S.verify||[]).length, dDone=(S.decisions||[]).length;
+
+  const cards=[
+    {l:"This week",v:wkH.toFixed(1),sub:"/ "+w.hrs+" h",c:wkH>=w.hrs?"var(--ok)":"var(--bone)"},
+    {l:"Drift",v:(D.drift>=0?"+":"")+D.drift.toFixed(1),sub:"hours",c:D.statusC},
+    {l:D.nextGate?"Next · "+D.nextGate.id:"All gates",v:D.nextGate?String(gd):"✓",sub:D.nextGate?(Math.abs(gd)===1?"day":"days"):"passed",
+     c:D.nextGate&&gd<0?"var(--fault)":D.nextGate&&gd<=7?"var(--amber)":"var(--bone)"}
+  ];
+
+  let body="";
+  if(UI.tab==="week"){
+    body=`<div class="row between center wrapf g2 mb3">
+      <div class="row center g2">
+        <button data-a="wk" data-v="-1" class="p3" style="padding:4px 9px;border:1px solid var(--rule);color:var(--dim);font-size:12px">←</button>
+        <span class="mono" style="font-size:12px">W${String(vw.n).padStart(2,"0")} · ${vw.label}</span>
+        <button data-a="wk" data-v="1" class="p3" style="padding:4px 9px;border:1px solid var(--rule);color:var(--dim);font-size:12px">→</button>
+      </div>
+      <div class="row center g3">
+        ${vw.gate?`<span class="mono" style="font-size:10px;color:var(--amber);letter-spacing:.1em">★ ${vw.gate}</span>`:""}
+        <span class="mono" style="font-size:10px;color:var(--dimmer)">${vw.hrs} h budgeted</span>
+      </div></div>
+    <div class="panel p3 mb3">
+      <div class="mono" style="font-size:13px;margin-bottom:10px">${esc(vw.focus)}</div>
+      ${vw.d.map((t,i)=>`<button class="item${(wd.done||[]).includes(i)?" on":""}" data-a="del" data-v="${i}"><span class="bx">${(wd.done||[]).includes(i)?"▣":"▢"}</span><span class="tx">${esc(t)}</span></button>`).join("")}
+    </div>
+    <div class="panel p3">
+      <div class="eyebrow">Friday checkpoint · three sentences</div>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-top:9px">
+        ${[["q1","Did this week's deliverables complete? If not, which and why?"],["q2","Is the current gate still achievable on its date?"],["q3","Are this week's design decisions written?"]]
+          .map(([k,q])=>`<div><div class="mono" style="font-size:10px;color:var(--dimmer);margin-bottom:3px">${esc(q)}</div><textarea rows="2" data-q="${k}" aria-label="${esc(q)}">${esc(wd[k]||"")}</textarea></div>`).join("")}
+      </div></div>`;
+  }
+  else if(UI.tab==="gates"){
+    body=`<div style="display:flex;flex-direction:column;gap:9px">${GATES.map(g=>{
+      const p=!!S.gates[g.id], dd=daysBetween(today(),g.date), od=!p&&dd<0;
+      return `<div class="panel gate p3" style="border-left-color:${p?"var(--ok)":od?"var(--fault)":"var(--rule)"}">
+        <div class="row between start wrapf g3">
+          <div class="row start g3 f1" style="min-width:210px">
+            <button data-a="gate" data-v="${g.id}" aria-label="Mark ${g.id} passed" class="mono" style="font-size:14px;color:${p?"var(--ok)":"var(--dimmer)"};margin-top:-2px">${p?"▣":"▢"}</button>
+            <div><div class="row baseline g2 wrapf">
+              <span class="mono" style="font-size:13px;color:${p?"var(--ok)":"var(--bone)"};letter-spacing:.06em">${g.id}</span>
+              <span class="mono" style="font-size:12px;color:var(--dim)">${esc(g.name)}</span></div>
+              <div class="mono" style="font-size:11px;color:var(--dimmer);line-height:1.6;margin-top:5px">${esc(g.crit)}</div></div>
+          </div>
+          <div style="text-align:right">
+            <div class="mono" style="font-size:10px;color:var(--dimmer)">${g.date}</div>
+            <div class="mono" style="font-size:12px;color:${p?"var(--ok)":od?"var(--fault)":dd<=7?"var(--amber)":"var(--dim)"}">${p?"PASSED":od?(-dd)+"d over":dd+"d"}</div>
+          </div></div></div>`;}).join("")}</div>`;
+  }
+  else if(UI.tab==="verify"||UI.tab==="decisions"){
+    const isV=UI.tab==="verify", items=isV?VERIFY:DECISIONS, key=isV?"verify":"decisions", done=S[key]||[];
+    body=`<div class="panel p3">
+      <div class="row between center mb2">
+        <div class="eyebrow">${isV?"Datasheet values to confirm":"Design decisions written"}</div>
+        <span class="mono" style="font-size:11px;color:${done.length===items.length?"var(--ok)":"var(--amber)"}">${done.length}/${items.length}</span>
+      </div>
+      <div class="bar"><i style="width:${(done.length/items.length*100).toFixed(1)}%;background:${done.length===items.length?"var(--ok)":"var(--amber)"}"></i></div>
+      ${items.map((t,i)=>`<button class="item${done.includes(i)?" on":""}" data-a="list" data-k="${key}" data-v="${i}"><span class="bx">${done.includes(i)?"▣":"▢"}</span><span class="tx">${isV?"":`<span style="color:var(--dimmer)">${String(i+1).padStart(2,"0")} </span>`}${esc(t)}</span></button>`).join("")}
+      ${isV?"":`<div class="mono" style="font-size:10px;color:var(--dimmer);margin-top:10px;line-height:1.6">★ marks the four that carry your best interview material.</div>`}
+    </div>`;
+  }
+  else{
+    const totals=TRACKS.map(t=>`<span class="mono" style="font-size:10px;color:${TRACK_C[t]}">${t} ${S.sessions.filter(s=>s.track===t).reduce((a,s)=>a+s.hours,0).toFixed(1)}h</span>`).join("");
+    body=`<div class="panel p3">
+      <div class="row between center wrapf g2 mb3">
+        <div class="eyebrow">Sessions · ${S.sessions.length} entries · ${D.logged.toFixed(1)} h total</div>
+        <div class="row g3">${totals}</div>
+      </div>
+      ${S.sessions.length===0
+        ? `<div class="mono" style="font-size:12px;color:var(--dimmer);padding:18px 0">No sessions yet. Log your first one above — even fifteen minutes of reading a datasheet counts.</div>`
+        : S.sessions.slice().reverse().slice(0,80).map(s=>`<div class="sess">
+            <span style="color:var(--dimmer);width:74px;flex-shrink:0">${s.date}</span>
+            <span style="color:${TRACK_C[s.track]||"var(--dim)"};width:40px;flex-shrink:0">${s.track}</span>
+            <span style="color:var(--amber);width:42px;flex-shrink:0">${s.hours.toFixed(1)}h</span>
+            <span class="f1">${esc(s.note||"—")}</span>
+            <button data-a="rm" data-v="${s.id}" aria-label="Delete session" style="color:var(--dimmer);font-size:11px">×</button></div>`).join("")}
+    </div>`;
+  }
+
+  document.getElementById("app").innerHTML=`
+  <div class="row between baseline wrapf g2 mb4">
+    <div class="row baseline g3">
+      <span class="mono" style="font-size:17px;letter-spacing:.2em">FORGE</span>
+      <span class="mono" style="font-size:10px;letter-spacing:.14em;color:var(--dimmer)">BUILD TRACKER</span>
+    </div>
+    <div class="row center g4">
+      <div class="eyebrow">${D.wi<0?"PRE-START":D.wi>=WEEKS.length?"RESERVE":"WEEK "+String(w.n).padStart(2,"0")+" · "+w.label}</div>
+      <span class="mono" style="font-size:11px;color:${D.statusC};letter-spacing:.1em">● ${D.status}</span>
+    </div></div>
+
+  <div class="panel mb3">
+    <div class="row between center wrapf g2" style="padding:12px 12px 4px">
+      <div class="eyebrow">Cumulative hours</div>
+      <div class="row center g4">
+        <span class="mono" style="font-size:10px;color:var(--cyan)">┄┄ budget</span>
+        <span class="mono" style="font-size:10px;color:var(--amber)">── logged</span>
+      </div></div>
+    ${burndown(D)}
+  </div>
+
+  <div class="grid3 mb3">${cards.map(k=>`<div class="panel p3">
+    <div class="eyebrow">${esc(k.l)}</div>
+    <div class="row baseline g2" style="margin-top:4px">
+      <span class="mono" style="font-size:26px;color:${k.c};line-height:1">${k.v}</span>
+      <span class="mono" style="font-size:11px;color:var(--dimmer)">${k.sub}</span>
+    </div></div>`).join("")}</div>
+
+  <div class="panel p3 mb3">
+    <div class="eyebrow mb2">Log a session</div>
+    <div class="row wrapf center g2">
+      <input id="hrs" placeholder="0.0" inputmode="decimal" aria-label="Hours worked" style="width:64px;text-align:center;color:var(--amber);font-size:14px">
+      <div class="row">${TRACKS.map((t,i)=>`<button class="trk${UI.track===t?" on":""}" data-a="trk" data-v="${t}" style="color:${UI.track===t?TRACK_C[t]:"var(--dimmer)"};border-color:${UI.track===t?TRACK_C[t]:"var(--rule)"};${i<TRACKS.length-1?"border-right-width:0":""}">${t}</button>`).join("")}</div>
+      <input id="note" class="f1" placeholder="What you did" aria-label="Session note" style="min-width:140px;font-size:12px">
+      <button data-a="add" style="padding:9px 18px;background:var(--amber);color:var(--ground);font-size:11px;letter-spacing:.1em;font-weight:600">ADD</button>
+    </div></div>
+
+  <div class="tabs mb3">
+    ${[["week","WEEK"],["gates","GATES"],["verify","VERIFY · "+vDone+"/"+VERIFY.length],["decisions","DECISIONS · "+dDone+"/"+DECISIONS.length],["log","LOG"]]
+      .map(([id,l])=>`<button class="tab${UI.tab===id?" on":""}" data-a="tab" data-v="${id}">${l}</button>`).join("")}
+  </div>
+  ${body}
+
+  <div class="foot">
+    <span>${D.cumBudget[D.cumBudget.length-1]} h · ${WEEKS.length} weeks · Aug 5 2026 → Jan 31 2027</span>
+    <span class="row g3">
+      <button data-a="export">Export backup</button>
+      <button data-a="import">Import</button>
+      <button data-a="reset">Clear all</button>
+    </span>
+  </div>`;
+
+  document.querySelectorAll("textarea[data-q]").forEach(el=>{
+    el.addEventListener("input",e=>{
+      const k=e.target.getAttribute("data-q");
+      S.weeks[UI.viewWeek]=Object.assign({},S.weeks[UI.viewWeek]||{},{[k]:e.target.value});
+      save();
+    });
+  });
+  const h=document.getElementById("hrs"),n=document.getElementById("note");
+  [h,n].forEach(el=>el&&el.addEventListener("keydown",e=>{if(e.key==="Enter")addSession();}));
+}
+
+/* ============================ actions ============================ */
+function addSession(){
+  const h=document.getElementById("hrs"),n=document.getElementById("note");
+  const v=parseFloat(h.value);
+  if(!v||v<=0||v>24){h.focus();toast("Enter hours between 0 and 24","var(--fault)");return;}
+  S.sessions.push({date:today(),hours:v,track:UI.track,note:(n.value||"").trim(),id:Date.now()});
+  save();render();
+  document.getElementById("hrs").focus();
+  toast("Logged "+v+" h");
+}
+
+function exportBackup(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="forge-tracker-"+today()+".json";
+  a.click();URL.revokeObjectURL(a.href);
+  toast("Backup downloaded");
+}
+
+function importBackup(){
+  const inp=document.createElement("input");inp.type="file";inp.accept="application/json";
+  inp.onchange=()=>{
+    const f=inp.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const d=JSON.parse(r.result);
+        if(!d||!Array.isArray(d.sessions))throw new Error("bad shape");
+        if(!confirm("Replace all current data with this backup?"))return;
+        S=Object.assign({sessions:[],weeks:{},verify:[],decisions:[],gates:{}},d);
+        save();render();toast("Backup restored");
+      }catch(e){toast("That file isn't a valid backup","var(--fault)");}
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;
+  const a=b.getAttribute("data-a"),v=b.getAttribute("data-v");
+  if(a==="tab"){UI.tab=v;render();}
+  else if(a==="trk"){UI.track=v;render();}
+  else if(a==="add"){addSession();}
+  else if(a==="wk"){UI.viewWeek=clampWk(UI.viewWeek+parseInt(v,10));render();}
+  else if(a==="del"){
+    const i=parseInt(v,10),cur=(S.weeks[UI.viewWeek]||{}).done||[];
+    S.weeks[UI.viewWeek]=Object.assign({},S.weeks[UI.viewWeek]||{},{done:cur.includes(i)?cur.filter(x=>x!==i):cur.concat(i)});
+    save();render();
+  }
+  else if(a==="list"){
+    const k=b.getAttribute("data-k"),i=parseInt(v,10),cur=S[k]||[];
+    S[k]=cur.includes(i)?cur.filter(x=>x!==i):cur.concat(i);
+    save();render();
+  }
+  else if(a==="gate"){S.gates[v]=!S.gates[v];save();render();}
+  else if(a==="rm"){S.sessions=S.sessions.filter(x=>String(x.id)!==String(v));save();render();}
+  else if(a==="export"){exportBackup();}
+  else if(a==="import"){importBackup();}
+  else if(a==="reset"){
+    if(confirm("Clear all logged sessions and progress? Export a backup first if you want to keep it."))
+      {S={sessions:[],weeks:{},verify:[],decisions:[],gates:{}};save();render();}
+  }
+});
+
+load();
+UI.viewWeek=clampWk(weekIdx(today()));
+render();
+</script>
+</body>
+</html>
