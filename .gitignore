@@ -1,2 +1,35 @@
 ﻿pico-sdk/
 build/
+
+# Build
+build/
+*.uf2
+*.elf
+*.bin
+*.hex
+*.map
+*.o
+*.d
+
+# Altium
+History/
+__Previews/
+Project Logs*/
+Project Outputs*/
+*.SchDocPreview
+*.PcbDocPreview
+*.~*
+*.Zip
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+*.code-workspace
+.vscode/ipch/
+
+# Data
+*.tmp
+*.bak
